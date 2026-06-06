@@ -52,6 +52,9 @@ export async function executeOpenAICompatRequest(
 		}
 
 		try {
+			const timeoutSignal = AbortSignal.timeout(120_000);
+			const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+
 			const response = await fetch(`${baseUrl}/chat/completions`, {
 				method: 'POST',
 				headers: {
@@ -64,7 +67,7 @@ export async function executeOpenAICompatRequest(
 					stream: streaming,
 					max_tokens: 16384
 				}),
-				signal
+				signal: combinedSignal
 			});
 
 			if (response.status === 429 || (response.status >= 500 && response.status < 600)) {

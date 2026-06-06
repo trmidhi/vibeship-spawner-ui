@@ -61,6 +61,8 @@ export async function executeAnthropicRequest(
 			if (systemPrompt) {
 				body.system = systemPrompt;
 			}
+			const timeoutSignal = AbortSignal.timeout(120_000);
+			const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
 
 			const response = await fetch(ANTHROPIC_API_URL, {
 				method: 'POST',
@@ -70,7 +72,7 @@ export async function executeAnthropicRequest(
 					'anthropic-version': ANTHROPIC_VERSION
 				},
 				body: JSON.stringify(body),
-				signal
+				signal: combinedSignal
 			});
 
 			if (response.status === 429 || (response.status >= 500 && response.status < 600)) {

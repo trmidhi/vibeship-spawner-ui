@@ -266,6 +266,9 @@ async function submitSparkTask(input: {
 	missionId: string;
 	signal?: AbortSignal;
 }): Promise<string> {
+	const timeoutSignal = AbortSignal.timeout(120_000);
+	const combinedSignal = input.signal ? AbortSignal.any([input.signal, timeoutSignal]) : timeoutSignal;
+
 	const response = await fetch(`${input.baseUrl}/v1/tasks`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
